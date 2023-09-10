@@ -1,0 +1,181 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "TADList.h"
+
+void Init(lista *l){
+    l->tam = 0;
+    l->frente = NULL;
+    l->fin = NULL;
+
+}
+
+void Insertar(lista *l, element e){
+
+    nodo *nuevo_nodo = malloc(sizeof(nodo));
+    nuevo_nodo->e = e;
+    nuevo_nodo->sig = NULL;
+    nuevo_nodo->ant = NULL;
+
+   if(l->frente==NULL){
+
+       l->frente = nuevo_nodo;
+       l->fin = nuevo_nodo;
+       l->tam++;
+       return;
+   }
+
+    nuevo_nodo->sig = l->frente;
+    l->frente->ant = nuevo_nodo;
+    l->frente = nuevo_nodo;
+    l->tam++;
+
+}
+
+boolean Lista_Vacia(lista *l){
+
+    boolean r=FALSE;
+
+    if(l->frente==NULL && l->fin==NULL){
+         r = TRUE;
+    }
+
+    return r;
+}
+
+void Eliminar(lista *l, char *p){
+
+    nodo *aux=NULL;
+    nodo *aux2=NULL;
+    boolean r= FALSE;
+
+    if(!Lista_Vacia(l)){
+
+        if(l->frente == l->fin){
+          aux2 = l->frente;
+          l->frente = NULL;
+          l->fin = NULL;
+          l->tam = 0;
+          free(aux2);
+          printf("\nELIMINACION FINALIZADA");
+          return;
+
+        }
+
+        aux = l->frente;
+
+        if(strcmp(aux->e.palabra, p) == 0){
+
+          aux2 = aux;
+          aux = aux->sig;
+          aux->sig->ant = NULL;
+          l->frente = l->frente->sig;
+          l->frente->sig->ant = NULL;
+          l->tam--;
+          free(aux2);
+          printf("\nSe ha elimiado correctamente!");
+          return;
+        }
+
+        aux = aux->sig;
+
+        while(aux != NULL){
+
+            if(strcmp(aux->e.palabra,p) == 0){
+
+                aux2 = aux;
+                aux->ant->sig = aux2->sig;
+                aux->sig->ant = aux2->ant;
+                l->tam--;
+                free(aux2);
+                printf("\nSe ha elimiado correctamente!");
+                return;
+            }
+
+            aux = aux->sig;
+        }
+
+        if(r == FALSE)
+          printf("\nNo existe esa palabra...");
+
+    }
+    else
+      printf("\nLa lista está vacía...");
+
+}
+
+void Imprimir_Lista(lista *l){
+
+    nodo *aux;
+
+    aux = l->frente;
+
+    while(aux != NULL){
+
+        printf("%s: %s -> ",aux->e.palabra, aux->e.significado);
+        aux = aux->sig;
+    }
+}
+
+void ImpColisiones(lista *l){
+
+    nodo *aux;
+
+    aux = l->frente;
+
+    while(aux != NULL){
+
+        printf("( %s ) ... ",aux->e.palabra);
+        aux = aux->sig;
+    }
+}
+
+int Tam_Lista(lista *l){
+  return l->tam;
+}
+
+void Buscar_Elemento(lista *l, char *p){
+
+  nodo *aux = l->frente;
+
+  while(aux != NULL){
+    if(strcmp(aux->e.palabra,p) == 0){
+      printf("\n%s: %s",aux->e.palabra,aux->e.significado);
+      return;
+    }
+    aux = aux->sig;
+  }
+
+  printf("\nLa palabra no existe.");
+  return;
+
+}
+
+void CambiaPal(lista *l, char *p){
+
+  nodo *aux = l->frente;
+  char DefNueva[150];
+  int i=0;
+
+  while(aux != NULL){
+    if(strcmp(aux->e.palabra,p) == 0){
+      printf("INTRO.");
+      while(getchar() != '\n');
+      printf("\nDefinicion Nueva: ");
+      gets(DefNueva);
+      while(DefNueva[i] != '\0'){
+        aux->e.significado[i] = DefNueva[i];
+        i++;
+      }
+      aux->e.significado[i] = '\0';
+
+      printf("\nNueva definicion\n%s: %s",aux->e.palabra,aux->e.significado);
+      return;
+    }
+    aux = aux->sig;
+  }
+
+  printf("\nLa palabra no existe.");
+  return;
+
+}

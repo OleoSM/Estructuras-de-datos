@@ -1,0 +1,213 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include <ctype.h>
+#include "C:\Users\Gustavo Carpio\Desktop\Practica2\pila_din\pila_din.c"
+
+// Prototipos de las funciones
+int isOperand(char);
+int VerificarParentesis(char[]);
+void cargarFormula(char[]);
+int Prec(char);
+int infixToPostfix(elemento[]);
+int EvalPosfija(elemento *);
+
+int main()
+{   
+    char e[100];  //Declaraci�n de la cadena e con tama�o 100
+    
+    // Llamamos a la funci�n que permite digitar la expresi�n
+    cargarFormula(e);
+    
+    //Condicion que nos ayuda a evaluar si la expresi�n es correcta
+    if (VerificarParentesis(e)){
+        puts("Los parentesis estan en orden\n");  //En caso de que sea correcta
+        infixToPostfix(e);                      //Convertir la expresion infija a postfija
+        EvalPosfija(e);                         //Evaluar la expresion postfija
+    }
+    else
+        puts("Los parentesis estan mal colocados\n");//En caso de que sea incorrecta
+	return 0;
+}
+
+/*
+    Son iguales (isOperand): recibe <- char; retorna -> int;
+    isOperand(ch)
+    Efecto: Si la letra esta en mayuscula o miniscula le da la misma
+    precedencia
+*/
+
+int isOperand(char ch)
+{
+    return (ch >= 'a' && ch <= 'z') ||
+           (ch >= 'A' && ch <= 'Z');
+}
+
+/*
+    Cargar Formula (cargarFormula): recibe <- char *(formula);
+    cargarFormula(formula)
+    Efecto: Funci�n para digitar la expresion y guardarla en una cadena "formula"
+*/
+
+void cargarFormula(char *formula)
+{
+    printf("Ingrese la formula:");
+    fflush(stdin); // Limpia la entrada de el bufer
+    gets(formula); // Guarda la cadena introducida en "formula"
+    return;
+}
+
+/*
+    Verificar Parentesis (VerificarParentesis): recibe <- pila*(s); recibe <- elemento*(e); retorna-> int
+    VerificarParentesis (s, e)
+    Efecto: Funci�n para verificar si la cantidad de parentesis de una expresi�n es correcta
+*/
+
+int VerificarParentesis (char e[])
+{
+    //Declaraci�n de nuestra pila s
+    pila s;
+
+    // Inicializamos nuestra pila s
+    Initialize(&s);
+
+    int i; //Declaraci�n de iterador
+
+    for( i=0 ;i < strlen(e) ;i++ ){ //Lee la cadena caracter por caracter
+        if (e[i] == '(' || e[i] == '[' || e[i] == '{' ) // Busca si hay algun '(', '{' o '['
+        {Push (&s, e[i]);} // Si cumple con la condici�n lo mete a la pila
+
+        else{
+        if (e[i] == ')' ){  //Si encuentra un ')'
+        if (Pop(&s) != '(')  //Saca de la pila un ')'
+        return 0;
+         }
+
+        else if (e[i] == ']'){ //Si encuentra un ']'
+        if (Pop(&s) != '[')     //Saca de la pila un ']'
+        return 0;
+        }
+
+        else if (e[i] == '}'){ //Si encuentra un '}'
+        if (Pop(&s) != '{')      //Saca de la pila un '}'
+        return 0;
+        }
+            }
+                }
+
+        if (Empty(&s))     // Si la pila esta vacia
+            return 1;     // Termina de forma correcta
+        else
+            return 0;     //Termina de forma incorrecta
+    }
+
+/*
+    Precedencia (Prec): recibe <- char; return -> int;
+    Prec(ch)
+    Efecto: Asigna un valor de prioridad dependiendo de el caracter
+*/
+
+int Prec(char ch)
+{
+    switch (ch){
+        case '+':
+        case '-':
+            return 1; //Verifica el operador y le da una prioridad de 1
+
+        case '*':
+        case '/':
+            return 2; //Verifica el operador y le da una prioridad de 2
+
+        case '^':
+            return 3; //Verifica el operador y le da una prioridad de 3
+    }
+    return -1;
+}
+
+/*
+    Infija a postfija (infixToPostfix): recibe <- elemento *(expresion);
+    infixToPostfix(expresion)
+    Efecto: Cambia una expresi�n infija a una expresi�n postfija
+*/
+
+int infixToPostfix(elemento *expresion)
+{
+    int i, k; //Declaraci�n de iteradores
+    pila stack; //Declaraci�n de pila
+    Initialize(&stack); //Inicializaci�n de pila
+
+    for (i = 0, k = -1; expresion[i]; ++i){
+
+        if (isOperand(expresion[i])) //Verifica si el caracter es mayuscula o miniscula
+            expresion[++k] = expresion[i]; // En ls posici�n 0(++k) guardas lo que tienes en la posici�n 1 (i++)
+
+        else if (expresion[i] == '(') // Si el caracter de la posici�n actual es = '('
+            Push(&stack, expresion[i]); // Mete a la pila el caracter
+
+        else if (expresion[i] == ')'){ // Si el caracter de la posici�n actual es = ')'
+
+
+            while (!Empty(&stack) && Top(&stack) != '(') // Mientras la pila no este vacia y el tope no sea '('
+                expresion[++k] = Pop(&stack); //En el pre incremento (++k) se guarda el ultimo caracter de la pila (tope)
+
+            if (!Empty(&stack) && Top(&stack) != '(') //Si la pila no este vacia y el tope no sea '(' (despues de el ciclo)
+                return -1; //El programa termina de manera incorrecta
+
+            else // En caso de que no se cumpla
+                Pop(&stack); // Saca el caracter de la pila
+        }
+        else {
+            while (!Empty(&stack) &&                        //Mientras la pila no sea vacia
+                 Prec(expresion[i]) <= Prec(Top(&stack)))   // y la precedencia de el operador actual sea menor a la precedencia del tope
+                expresion[++k] = Pop(&stack);    // En el pre incremento (++k) se guarda el ultimo caracter de la pila (tope)
+            Push(&stack, expresion[i]);          // Metemos el caracter a la pila
+        }
+    }
+
+    while (!Empty(&stack))      //Mientras la pila no sea vacia
+        expresion[++k] = Pop(&stack ); //En el pre incremento (++k) se guarda el ultimo caracter de la pila (tope)
+
+    expresion[++k] = '\0';      //Guarda el final la cadena utilizando el caracter nulo '\'
+    printf( "\nEl resultado de la expresion es: \n %s", expresion);
+    return 0;
+}
+
+/*
+    Evalua Postfija (EvalPosfija): recibe <- elemento *(exp); devuelve -> int
+    EvalPosfija(exp)
+    Efecto: Calcula el valor de una expresi�n postfija
+*/
+
+int EvalPosfija(elemento *exp){
+
+    int i; //Declaraci�n iterador
+
+    pila pilita; //Declaraci�n pila
+
+    Initialize(&pilita); //Inicializaci�n de la pila
+
+    for (i = 0; exp[i]; ++i){
+
+        if (isdigit(exp[i]))        //Si el caracter que se esta leyendo es un digito, lo mete a la pila
+            Push(&pilita, exp[i] - '0'); 
+
+        else{
+            int val1 = Pop(&pilita); //Guarda el ultimo digito de pila
+            int val2 = Pop(&pilita);
+
+            switch (exp[i]){ //Evalua el operador
+
+            case '+': Push(&pilita, val2 + val1); //En caso que el operador sea '+', se suman los 2 digitos guardados
+                break;
+            case '-': Push(&pilita, val2 - val1); //En caso que el operador sea '-', se restan los 2 digitos guardados
+                break;
+            case '*': Push(&pilita, val2 * val1); //En caso que el operador sea '*', se multiplican los 2 digitos guardados
+                break;
+            case '/': Push(&pilita, val2/val1); //En caso que el operador sea '/', se dividen los 2 digitos guardados
+                break;
+            }
+        }
+    }
+
+    return Pop(&pilita); //Retorna el ultimo elemento de la pila
+}
